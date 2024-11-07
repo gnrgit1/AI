@@ -18,39 +18,41 @@ straight_line = {
     'City G': 0  
 }
 
-def bestfirst(start, goal):
-   
-    from queue import PriorityQueue
-    priority_queue, visited = PriorityQueue(), {}
-    priority_queue.put((straight_line[start], 0, start, [start]))
-    visited[start] = straight_line[start]
-    
-    while not priority_queue.empty():
-        (heuristic, cost, vertex, path) = priority_queue.get()
-       
-        if vertex == goal:
-            return heuristic, cost, path
+from queue import PriorityQueue
+
+def best_first_search(start, goal):
+    queue = PriorityQueue()
+    queue.put((straight_line[start], 0, start, [start]))
+    visited = set()
+
+    while not queue.empty():
+        heuristic, cost, city, path = queue.get()
         
-        for next_node in GRAPH[vertex].keys():
-            current_cost = cost + GRAPH[vertex][next_node]
-            heuristic = straight_line[next_node]
-            if next_node not in visited or visited[next_node] >= heuristic:
-                visited[next_node] = heuristic
-                priority_queue.put((heuristic, current_cost, next_node, path + [next_node]))
+        if city == goal:
+            return cost, path
+        
+        if city not in visited:
+            visited.add(city)
+            for neighbor, travel_cost in GRAPH[city].items():
+                if neighbor not in visited:
+                    queue.put((straight_line[neighbor], cost + travel_cost, neighbor, path + [neighbor]))
+
+    return None, []  # Return None if no path is found
 
 def main():
-    print('Enter Starting city:',end = ' ')
-    source_node = input().strip()
-    print('Enter Destination city:',end = ' ')
-    dest_node = input().strip()
-    
-    if source_node not in GRAPH or dest_node not in GRAPH:
+    start = input('Enter Starting city: ').strip()
+    goal = input('Enter Destination city: ').strip()
+
+    if start not in GRAPH or goal not in GRAPH:
         print('City does not exist or not found.')
     else:
-        print('\nBest First Search Path: ')
-        heuristic, cost, optimal_path = bestfirst(source_node,dest_node)
-        print('Path Cost =', cost)
-        print(' -> '.join(city for city in optimal_path))
+        print('\nBest First Search Path:')
+        cost, path = best_first_search(start, goal)
+        if path:
+            print('Path Cost =', cost)
+            print(' -> '.join(path))
+        else:
+            print('No path found.')
 
 if __name__ == '__main__':
     main()
